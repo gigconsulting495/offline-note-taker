@@ -1,0 +1,21 @@
+# === Transcription (ASR) ===
+mlx-whisper>=0.4.3
+
+# === Diarisation ===
+pyannote.audio>=3.1
+
+# === Audio I/O ===
+sounddevice>=0.4.6
+soundfile>=0.12.1
+pydub>=0.25.1
+audioop-lts>=0.2.1          # Remplacement de audioop pour Python >= 3.13
+
+# === Configuration ===
+python-dotenv>=1.0.0
+
+# === Interface CLI ===
+typer>=0.9.0
+rich>=13.0.0
+
+# === Interface GUI (Phase 5) ===
+customtkinter>=5.2.0

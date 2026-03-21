@@ -1,0 +1,45 @@
+# Environnement virtuel
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.log
+pyinstaller_log.txt
+.pytest_cache/
+
+# PyInstaller spec files sauf app.spec
+*.spec
+!app.spec
+
+# Variables d'environnement (token HF, secrets)
+.env
+
+# Données audio et sorties (volumineux)
+data/raw/
+data/converted/
+data/output/
+*.wav
+*.mp3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Modèles téléchargés (si stockés localement)
+models/
+
+# Fichiers d'installation et exécutables MacOS
+*.dmg
