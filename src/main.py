@@ -144,6 +144,18 @@ def record(
 
 if __name__ == "__main__":
     import sys
+    import multiprocessing
+
+    # OBLIGATOIRE pour PyInstaller sur macOS :
+    # Sans freeze_support(), chaque processus fils (spawn par torch/pyannote)
+    # relance main.py comme un processus principal → double icône dans le Dock.
+    multiprocessing.freeze_support()
+
+    # Forcer "fork" évite que les processus fils créent de nouvelles fenêtres Dock.
+    # "spawn" (défaut macOS) crée un processus complet avec sa propre icône.
+    # Note : "fork" est sûr ici car on le fait AVANT d'importer torch/GUI.
+    multiprocessing.set_start_method("fork", force=True)
+
     # En mode bundled (.app PyInstaller), toujours lancer la GUI
     # car sys.argv peut être pollué par les événements Apple (odoc/oapp)
     if getattr(sys, '_MEIPASS', None):

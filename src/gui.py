@@ -1,9 +1,14 @@
+import logging
+import os
+import signal
 import sys
 import threading
 import tkinter as tk
 from tkinter import filedialog
 from pathlib import Path
 import subprocess
+
+logger = logging.getLogger(__name__)
 
 from PIL import Image as PILImage, ImageTk
 
@@ -56,9 +61,36 @@ class CRReunionApp(ctk.CTk):
         # Conteneur principal qui va héberger les différentes vues
         self.container = ctk.CTkFrame(self, fg_color="transparent")
         self.container.pack(fill="both", expand=True, padx=20, pady=20)
-        
+
+        # Gestionnaire de fermeture propre — tue les processus fils (torch/pyannote)
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
+
         # Démarrage sur la vue principale
         self.show_home_view()
+
+    def _on_closing(self):
+        """Fermeture propre : arrête l'enregistrement, signale aux threads, et tue le processus."""
+        logger.info("Fermeture de l'application demandée")
+        self._processing = False
+
+        # Arrêter un éventuel enregistrement en cours
+        if self.recorder is not None:
+            try:
+                self.recorder.stop()
+            except Exception:
+                pass
+            self.recorder = None
+
+        # Détruire la fenêtre Tk
+        try:
+            self.destroy()
+        except Exception:
+            pass
+
+        # Forcer la terminaison du processus entier (y compris les threads/processus fils)
+        # Nécessaire car torch/pyannote peuvent laisser des threads non-daemon actifs
+        logger.info("Terminaison du processus (pid=%d)", os.getpid())
+        os._exit(0)
 
     def clear_container(self):
         """Supprime tous les widgets de la vue courante."""
