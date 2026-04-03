@@ -3,10 +3,31 @@ Configuration globale de l'application CR Reunion.
 Centralise tous les paramètres, chemins et constantes.
 """
 
+import logging
 import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+
+# ── Logging centralisé ──────────────────────────────────────────────
+# En mode bundled (.app), les logs vont dans un fichier exploitable après coup.
+# En mode dev, ils s'affichent aussi dans la console.
+_log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+_log_date_format = "%H:%M:%S"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=_log_format,
+    datefmt=_log_date_format,
+    handlers=[logging.StreamHandler()],
+)
+
+# Fichier de log persistant dans ~/Documents/CR_Reunions/
+_log_dir = Path.home() / "Documents" / "CR_Reunions"
+_log_dir.mkdir(parents=True, exist_ok=True)
+_file_handler = logging.FileHandler(_log_dir / "app.log", encoding="utf-8")
+_file_handler.setFormatter(logging.Formatter(_log_format, datefmt=_log_date_format))
+logging.getLogger().addHandler(_file_handler)
 
 if getattr(sys, '_MEIPASS', None):
     # En mode bundled, les data files sont extraits dans _MEIPASS

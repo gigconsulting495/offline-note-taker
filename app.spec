@@ -124,7 +124,7 @@ exe = EXE(
     upx=False,
     console=False,       # Pas de console (mode windowed)
     disable_windowed_traceback=False,
-    argv_emulation=True,  # Requis pour macOS .app
+    argv_emulation=False,  # False pour éviter les conflits d'événements Apple au lancement
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
@@ -149,8 +149,8 @@ app = BUNDLE(
     info_plist={
         'CFBundleName': 'Note Taker Offline',
         'CFBundleDisplayName': 'Note Taker Offline',
-        'CFBundleVersion': '1.0.0',
-        'CFBundleShortVersionString': '1.0.0',
+        'CFBundleVersion': '2.0.0',
+        'CFBundleShortVersionString': '2.0.0',
         'NSMicrophoneUsageDescription': 'Cette application nécessite l\'accès au microphone pour enregistrer les réunions.',
         'NSHighResolutionCapable': True,
     },

@@ -144,7 +144,12 @@ def record(
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) == 1:
+    # En mode bundled (.app PyInstaller), toujours lancer la GUI
+    # car sys.argv peut être pollué par les événements Apple (odoc/oapp)
+    if getattr(sys, '_MEIPASS', None):
+        from src.gui import launch_gui
+        launch_gui()
+    elif len(sys.argv) == 1:
         from src.gui import launch_gui
         launch_gui()
     else:

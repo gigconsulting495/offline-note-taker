@@ -7,6 +7,7 @@ Fournit :
 """
 
 import gc
+import logging
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
@@ -22,6 +23,8 @@ from src.config import (
     CONVERTED_DIR,
     SUPPORTED_IMPORT_FORMATS,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class AudioRecorder:
@@ -80,20 +83,28 @@ class AudioRecorder:
         self.is_paused = False
 
         if self._stream is not None:
-            self._stream.stop()
-            self._stream.close()
-            self._stream = None
+            try:
+                self._stream.stop()
+                self._stream.close()
+            except Exception as e:
+                logger.warning("Erreur lors de la fermeture du stream audio: %s", e)
+            finally:
+                self._stream = None
 
         if self._file is not None:
-            self._file.close()
-            self._file = None
+            try:
+                self._file.close()
+            except Exception as e:
+                logger.warning("Erreur lors de la fermeture du fichier audio: %s", e)
+            finally:
+                self._file = None
 
         return self.filepath
 
     def _audio_callback(self, indata, frames, time_info, status):
         """Callback appelé par sounddevice à chaque chunk audio."""
         if status:
-            print(f"  ⚠ Audio callback status: {status}")
+            logger.warning("Audio callback status: %s", status)
 
         if self.is_recording and not self.is_paused:
             if self._file is not None:

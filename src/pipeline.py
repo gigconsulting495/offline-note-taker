@@ -9,6 +9,7 @@ Enchaîne de manière strictement séquentielle :
 5. Export JSON
 """
 
+import logging
 import time
 from pathlib import Path
 
@@ -18,6 +19,8 @@ from src.audio_manager import convert_to_wav
 from src.diarizer import diarize
 from src.transcriber import transcribe
 from src.exporter import export_files
+
+logger = logging.getLogger(__name__)
 
 
 def align_segments(
@@ -98,49 +101,40 @@ def run_pipeline(
     input_path = Path(input_path)
     start_time = time.time()
 
-    print("╔══════════════════════════════════════════════════════════╗")
-    print("║   CR Reunion — Pipeline de traitement                   ║")
-    print("╚══════════════════════════════════════════════════════════╝")
-    print(f"  Fichier : {input_path.name}")
-    print(f"  Langue  : {language if language else 'Auto-détection'}")
-    print("")
+    logger.info("Pipeline de traitement démarré")
+    logger.info("Fichier : %s | Langue : %s", input_path.name, language or "Auto-détection")
 
     # ── Étape 1 : Conversion audio ───────────────────────────────────
-    print("━━━ Étape 1/5 : Conversion audio ━━━")
+    logger.info("Étape 1/5 : Conversion audio")
     suffix = input_path.suffix.lower()
     if suffix in SUPPORTED_IMPORT_FORMATS:
         wav_path = convert_to_wav(input_path)
-        print(f"  Fichier converti : {wav_path.name} ✓")
+        logger.info("Fichier converti : %s", wav_path.name)
     else:
         raise ValueError(f"Format non supporté : {suffix}")
-    print("")
 
     # ── Étape 2 : Diarisation ────────────────────────────────────────
-    print("━━━ Étape 2/5 : Diarisation ━━━")
+    logger.info("Étape 2/5 : Diarisation")
     diarization_segments = diarize(wav_path, min_speakers, max_speakers)
-    print("")
 
     # ── Étape 3 : Transcription ──────────────────────────────────────
-    print("━━━ Étape 3/5 : Transcription ━━━")
+    logger.info("Étape 3/5 : Transcription")
     transcription_segments = transcribe(wav_path, language)
-    print("")
 
     # ── Étape 4 : Alignement ─────────────────────────────────────────
-    print("━━━ Étape 4/5 : Alignement temporel ━━━")
+    logger.info("Étape 4/5 : Alignement temporel")
     aligned_segments = align_segments(diarization_segments, transcription_segments)
-    print(f"  {len(aligned_segments)} segments bruts alignés ✓")
-    print("")
+    logger.info("%d segments bruts alignés", len(aligned_segments))
 
     # ── Étape 4.5 : Post-processing ──────────────────────────────────
     from src.post_processing import process_transcript
-    print("━━━ Étape 4.5/5 : Post-processing (Fluide) ━━━")
+    logger.info("Étape 4.5/5 : Post-processing")
     processed_conversation = process_transcript(aligned_segments)
-    print(f"  {len(processed_conversation)} blocs de conversation continus générés ✓")
-    print("")
+    logger.info("%d blocs de conversation continus générés", len(processed_conversation))
 
     # ── Étape 5 : Export ─────────────────────────────────────────────
-    print("━━━ Étape 5/5 : Export (JSON & TXT) ━━━")
-    
+    logger.info("Étape 5/5 : Export (JSON & TXT)")
+
     # Création du dossier horodaté de la réunion
     timestamp_str = datetime.now().strftime("%Y-%m-%d_%Hh%M")
     base_name = output_name or input_path.stem
@@ -157,22 +151,16 @@ def run_pipeline(
 
     # ── Sauvegarde de l'Audio ─────────────────────────────────────────
     import shutil
-    print("")
-    print("━━━ Conservation de l'Audio ━━━")
-    
+    logger.info("Conservation de l'audio")
+
     if wav_path.exists():
         final_audio_path = run_folder / wav_path.name
-        # On déplace l'audio de travail de /tmp vers le dossier de la réunion
         shutil.move(str(wav_path), str(final_audio_path))
-        print(f"  Fichier audio conservé : {final_audio_path.name} ✓")
+        logger.info("Fichier audio conservé : %s", final_audio_path.name)
     else:
-        print("  Aucun fichier audio de transit trouvé ✓")
+        logger.info("Aucun fichier audio de transit trouvé")
 
     elapsed = time.time() - start_time
-    print("")
-    print("╔══════════════════════════════════════════════════════════╗")
-    print(f"║   Traitement terminé en {elapsed:.1f}s")
-    print(f"║   Dossier de sortie : {run_folder}")
-    print("╚══════════════════════════════════════════════════════════╝")
+    logger.info("Traitement terminé en %.1fs | Dossier : %s", elapsed, run_folder)
 
     return output_path

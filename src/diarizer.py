@@ -7,6 +7,7 @@ Libère explicitement la mémoire GPU/MPS après traitement.
 """
 
 import gc
+import logging
 import torch
 from pathlib import Path
 
@@ -19,6 +20,8 @@ from src.config import (
     MIN_SPEAKERS,
     MAX_SPEAKERS,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def diarize(audio_path: str | Path, min_speakers: int | None = None, max_speakers: int | None = None) -> list[dict]:
@@ -47,20 +50,20 @@ def diarize(audio_path: str | Path, min_speakers: int | None = None, max_speaker
             "Obtenez votre token ici : https://huggingface.co/settings/tokens"
         )
 
-    print(f"▸ Chargement du modèle de diarisation ({DIARIZATION_MODEL})...")
+    logger.info("Chargement du modèle de diarisation (%s)...", DIARIZATION_MODEL)
     pipeline = Pipeline.from_pretrained(DIARIZATION_MODEL, token=HF_TOKEN)
 
     # Utiliser MPS (Metal) si disponible, sinon CPU
     if torch.backends.mps.is_available():
         pipeline.to(torch.device("mps"))
-        print("  Accélération MPS (Metal) activée ✓")
+        logger.info("Accélération MPS (Metal) activée")
     else:
-        print("  MPS non disponible, utilisation du CPU ⚠")
+        logger.warning("MPS non disponible, utilisation du CPU")
 
     if min_spk and max_spk:
-        print(f"▸ Diarisation en cours ({min_spk}-{max_spk} locuteurs attendus)...")
+        logger.info("Diarisation en cours (%s-%s locuteurs attendus)...", min_spk, max_spk)
     else:
-        print(f"▸ Diarisation en cours (nombre de locuteurs détecté automatiquement)...")
+        logger.info("Diarisation en cours (nombre de locuteurs détecté automatiquement)...")
 
     with ProgressHook() as hook:
         diarization = pipeline(
@@ -87,8 +90,8 @@ def diarize(audio_path: str | Path, min_speakers: int | None = None, max_speaker
             "speaker": speaker,
         })
 
-    print(f"  {len(segments)} segments identifiés pour "
-          f"{len(set(s['speaker'] for s in segments))} locuteurs ✓")
+    logger.info("%d segments identifiés pour %d locuteurs",
+                len(segments), len(set(s['speaker'] for s in segments)))
 
     # ── Libération mémoire explicite ─────────────────────────────────
     del pipeline
@@ -96,6 +99,6 @@ def diarize(audio_path: str | Path, min_speakers: int | None = None, max_speaker
     if torch.backends.mps.is_available():
         torch.mps.empty_cache()
     gc.collect()
-    print("  Mémoire GPU/MPS libérée ✓")
+    logger.info("Mémoire GPU/MPS libérée")
 
     return segments

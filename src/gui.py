@@ -51,6 +51,7 @@ class CRReunionApp(ctk.CTk):
         # Variables d'état
         self.selected_file_path: str | None = None
         self.recorder: AudioRecorder | None = None
+        self._processing: bool = False  # Flag pour thread safety pendant le traitement
 
         # Conteneur principal qui va héberger les différentes vues
         self.container = ctk.CTkFrame(self, fg_color="transparent")
@@ -61,6 +62,7 @@ class CRReunionApp(ctk.CTk):
 
     def clear_container(self):
         """Supprime tous les widgets de la vue courante."""
+        self._processing = False  # Signaler aux threads en cours que la vue a changé
         for widget in self.container.winfo_children():
             widget.destroy()
 
@@ -257,6 +259,7 @@ class CRReunionApp(ctk.CTk):
     # --- VUE 4 : TRAITEMENT ---
     def show_processing_view(self):
         self.clear_container()
+        self._processing = True
 
         lbl_title = ctk.CTkLabel(self.container, text="Traitement en cours...", font=ctk.CTkFont(size=24, weight="bold"))
         lbl_title.pack(pady=(80, 40))
@@ -269,15 +272,23 @@ class CRReunionApp(ctk.CTk):
         self.lbl_proc_status = ctk.CTkLabel(self.container, text="Initialisation de l'IA...", text_color="gray", font=ctk.CTkFont(size=16))
         self.lbl_proc_status.pack(pady=20)
 
-        # Démarrer le process dans un thread sépéaré
+        # Démarrer le process dans un thread séparé
         lang = self.lang_var.get()
-        thread = threading.Thread(target=self.process_file_thread, args=(self.selected_file_path, lang))
+        thread = threading.Thread(target=self.process_file_thread, args=(self.selected_file_path, lang), daemon=True)
         thread.start()
+
+    def _safe_update_status(self, text: str):
+        """Met à jour le label de statut de manière thread-safe."""
+        if self._processing and hasattr(self, 'lbl_proc_status'):
+            try:
+                self.lbl_proc_status.configure(text=text)
+            except Exception:
+                pass  # Widget détruit entre-temps, on ignore
 
     def process_file_thread(self, file_path, lang):
         # Mettre à jour le texte dynamiquement avant le blocage
-        self.after(500, lambda: self.lbl_proc_status.configure(text="Analyse audio et transcription en cours...\nCela peut prendre quelques minutes."))
-        
+        self.after(500, lambda: self._safe_update_status("Analyse audio et transcription en cours...\nCela peut prendre quelques minutes."))
+
         try:
             output_path = run_pipeline(
                 input_path=file_path,
@@ -285,9 +296,11 @@ class CRReunionApp(ctk.CTk):
                 min_speakers=None,
                 max_speakers=None
             )
-            self.after(0, self.show_success_view, output_path)
+            if self._processing:
+                self.after(0, self.show_success_view, output_path)
         except Exception as e:
-            self.after(0, self.show_error_view, str(e))
+            if self._processing:
+                self.after(0, self.show_error_view, str(e))
 
     # --- VUE 5 : SUCCÈS ---
     def show_success_view(self, output_path: Path):

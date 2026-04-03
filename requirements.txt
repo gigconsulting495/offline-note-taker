@@ -19,3 +19,4 @@ rich>=13.0.0
 
 # === Interface GUI (Phase 5) ===
 customtkinter>=5.2.0
+Pillow>=10.0.0

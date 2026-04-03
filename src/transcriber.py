@@ -7,6 +7,7 @@ La langue est forcée par l'utilisateur ("fr" ou "en").
 """
 
 import gc
+import logging
 from pathlib import Path
 
 import mlx_whisper
@@ -15,6 +16,8 @@ from src.config import (
     WHISPER_MODEL,
     DEFAULT_LANGUAGE,
 )
+
+logger = logging.getLogger(__name__)
 
 # Mapping des noms de modèles vers les repos Hugging Face MLX
 MLX_MODEL_REPOS = {
@@ -43,14 +46,13 @@ def transcribe(audio_path: str | Path, language: str | None = None) -> list[dict
     lang = language or DEFAULT_LANGUAGE
     model_repo = MLX_MODEL_REPOS.get(WHISPER_MODEL, f"mlx-community/{WHISPER_MODEL}")
 
-    print(f"▸ Chargement du modèle de transcription ({WHISPER_MODEL})...")
-    print(f"  Repo MLX : {model_repo}")
-    
+    logger.info("Chargement du modèle de transcription (%s) — Repo : %s", WHISPER_MODEL, model_repo)
+
     if lang is not None:
-        print(f"▸ Transcription en cours (langue forcée : {lang})...")
+        logger.info("Transcription en cours (langue forcée : %s)...", lang)
         transcribe_kwargs = {"language": lang, "task": "transcribe"}
     else:
-        print(f"▸ Transcription en cours (détection automatique de la langue)...")
+        logger.info("Transcription en cours (détection automatique de la langue)...")
         transcribe_kwargs = {"task": "transcribe"}
 
     result = mlx_whisper.transcribe(
@@ -78,11 +80,11 @@ def transcribe(audio_path: str | Path, language: str | None = None) -> list[dict
             "text": result.get("text", "").strip(),
         })
 
-    print(f"  {len(segments)} segments transcrits ✓")
+    logger.info("%d segments transcrits", len(segments))
 
     # ── Libération mémoire explicite ─────────────────────────────────
     del result
     gc.collect()
-    print("  Mémoire MLX libérée ✓")
+    logger.info("Mémoire MLX libérée")
 
     return segments

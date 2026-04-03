@@ -6,10 +6,13 @@ et la liste des segments alignés (horodatage, locuteur, texte).
 """
 
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 
 from src.config import OUTPUT_DIR, JSON_INDENT
+
+logger = logging.getLogger(__name__)
 
 
 def export_files(
@@ -66,10 +69,10 @@ def export_files(
             content = block["content"]
             f.write(f"[{timestamp}] {speaker} :\n{content}\n\n")
 
-    print(f"  Exports terminés dans : {run_folder.name} ✓")
-    print(f"  Fichiers créés : transcript.json, transcript.txt")
-    print(f"  Durée de conversation : {_format_duration(total_duration)}")
-    print(f"  Locuteurs identifiés : {', '.join(unique_speakers)}")
+    logger.info("Exports terminés dans : %s", run_folder.name)
+    logger.info("Fichiers créés : transcript.json, transcript.txt")
+    logger.info("Durée de conversation : %s | Locuteurs : %s",
+                _format_duration(total_duration), ", ".join(unique_speakers))
 
     return json_path
 
