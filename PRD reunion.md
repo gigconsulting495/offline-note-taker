@@ -1,7 +1,7 @@
-# PRD (v3.0) : Note Taker Offline — Transcription & Diarisation 100% Locale
+# PRD (v3.1) : Note Taker Offline — Transcription & Diarisation 100% Locale
 
-- **Référence :** v3.0
-- **Date :** 2026-03-21
+- **Référence :** v3.1
+- **Date :** 2026-04-03
 - **Nom de l'application :** Note Taker Offline (anciennement « CR Reunion »)
 - **Branding :** *Awesome Offline Note Taker by GiG Consulting*
 
@@ -81,6 +81,9 @@ L'application est distribuée sous forme d'installeur `.dmg` prêt à l'emploi (
 
 ```text
 CR reunion/
+├── Documentation/
+│   ├── Manuel_Technique.md  # Architecture, Design Decisions, Core Components
+│   └── CODE_REVIEW.md       # Audit de code
 ├── src/
 │   ├── main.py              # Point d'entrée (GUI si aucun arg, CLI sinon)
 │   ├── config.py            # Configuration centralisée + détection PyInstaller

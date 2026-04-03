@@ -14,6 +14,9 @@
   - [x] Intégration des logos GiG Consulting
   - [x] Build et tests de l'application standalone
   - [x] Création du DMG avec drag & drop vers Applications
+- [x] **Phase 7 (Documentation & Architecture)** : Manuel technique complet, workflows IA.
+  - [x] Rédaction du manuel technique (docs-architect) et revue de code.
+  - [x] Mise à jour des specs (v3.1) et harmonisation.
 
 ## Tâches restantes / Améliorations futures
 

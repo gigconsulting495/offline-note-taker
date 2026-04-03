@@ -4,8 +4,43 @@ Point d'entrée CLI — CR Reunion.
 Utilisation :
     python src/main.py process --input fichier.mp3 --language fr
     python src/main.py record --language fr --duration 60
+
+IMPORTANT : freeze_support() et la garde anti-subprocess DOIVENT être
+exécutés AVANT tout autre import, sinon les processus fils de torch/mlx
+relancent ce script et créent une 2e fenêtre GUI.
 """
 
+# ═══════════════════════════════════════════════════════════════════════
+# GARDE ANTI-SUBPROCESS — Doit être tout en haut, avant les imports !
+# ═══════════════════════════════════════════════════════════════════════
+import multiprocessing
+import sys
+import os
+
+# freeze_support() est OBLIGATOIRE pour PyInstaller sur macOS.
+# Quand torch/pyannote/mlx spawn un processus fils via "spawn" (défaut macOS),
+# le fils ré-exécute main.py. freeze_support() détecte qu'on est un fils
+# et exécute la tâche déléguée au lieu de relancer toute l'app.
+multiprocessing.freeze_support()
+
+# Garde supplémentaire : si un processus fils passe à travers freeze_support()
+# (cas rare mais observé avec certaines versions de torch), on détecte
+# manuellement qu'on est un fils et on quitte immédiatement.
+_is_child_process = (
+    os.environ.get("_PYI_CHILD_PROCESS") == "1"
+    or "--multiprocessing-fork" in sys.argv
+    or any("--multiprocessing" in arg for arg in sys.argv)
+)
+if _is_child_process:
+    sys.exit(0)
+
+# Marquer les futurs processus fils pour qu'ils se détectent eux-mêmes
+os.environ["_PYI_CHILD_PROCESS"] = "1"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Imports normaux (maintenant sécurisés)
+# ═══════════════════════════════════════════════════════════════════════
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -143,19 +178,6 @@ def record(
 
 
 if __name__ == "__main__":
-    import sys
-    import multiprocessing
-
-    # OBLIGATOIRE pour PyInstaller sur macOS :
-    # Sans freeze_support(), chaque processus fils (spawn par torch/pyannote)
-    # relance main.py comme un processus principal → double icône dans le Dock.
-    multiprocessing.freeze_support()
-
-    # Forcer "fork" évite que les processus fils créent de nouvelles fenêtres Dock.
-    # "spawn" (défaut macOS) crée un processus complet avec sa propre icône.
-    # Note : "fork" est sûr ici car on le fait AVANT d'importer torch/GUI.
-    multiprocessing.set_start_method("fork", force=True)
-
     # En mode bundled (.app PyInstaller), toujours lancer la GUI
     # car sys.argv peut être pollué par les événements Apple (odoc/oapp)
     if getattr(sys, '_MEIPASS', None):

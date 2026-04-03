@@ -15,6 +15,19 @@ et ce projet adhère au [Versionnage Sémantique](https://semver.org/lang/fr/).
 
 ---
 
+## [2.1.0] - 2026-04-03
+
+### Added
+
+- **Documentation Technique** : Création du dossier `Documentation/` contenant un Manuel d'Architecture exhaustif (`Manuel_Technique.md`) généré par workflow docs-architect et la revue de code (`CODE_REVIEW.md`).
+
+### Changed
+
+- **Build macOS** : Sécurisation du build final via flag `--clean` et automatisation de l'éjection de volume pour le script `build_dmg.sh`.
+- **Multiprocessing macOS** : Renforcement des verrous anti-spawn infinis causés par Pytorch dans `main.py` suite aux recommandations d'audit de l'architecture.
+
+---
+
 ## [2.0.0] - 2026-03-21
 
 ### Added

@@ -50,19 +50,30 @@ Application macOS 100% hors-ligne permettant d'enregistrer, de transcrire et de 
 
 *Notes techniques : Lors du tout premier lancement, l'application aura besoin d'une connexion internet pour télécharger discrètement les modèles IA (~ 4.5 Go) dans le cache de l'ordinateur. Elle fonctionnera ensuite de manière 100% hors-ligne.*
 
-## 📦 Build de l'Application (PyInstaller)
+## 📦 Build de l'Application (macOS)
 
-Si vous souhaitez compiler l'application en un exécutable standalone `.app` ou `.dmg` macOS :
+L'application est distribuée pour macOS sous forme d'image disque (.dmg) 100% encapsulée. Pour compiler l'application :
 
+1. Construire l'exécutable avec PyInstaller :
 ```bash
-pyinstaller app.spec
+pyinstaller app.spec --clean --noconfirm
 ```
 
-L'exécutable sera généré dans le sous-dossier `dist/`.
+2. Créer l'installeur `.dmg` macOS :
+```bash
+bash build_dmg.sh
+```
+
+L'exécutable sera généré dans `dist/` et le `.dmg` à la racine du projet.
 
 ## 📄 Documentation détaillée
 
-Pour plus d'informations sur l'ingénierie du projet, consultez le cahier des charges et les spécifications :
+Pour une compréhension totale de l'architecture logicielle, de nos choix d'infrastructures et des résolutions de bugs liés à Apple Silicon et macOS, notre Manuel Technique (100+ pages) généré par l'agent @docs-architect est disponible.
 
+Consultez ces documents dans le sous-dossier `Documentation/` (ouverts dans n'importe quel éditeur, schémas Mermaid inclus) :
+
+- [Manuel_Technique.md](Documentation/Manuel_Technique.md) : L'encyclopédie du projet.
+- [CODE_REVIEW.md](Documentation/CODE_REVIEW.md) : Audit complet de la base de code Python.
+
+La définition officielle des besoins (PRD) reste disponible à l'adresse :
 - `PRD reunion.md`
-- `Specifications systeme.md`
