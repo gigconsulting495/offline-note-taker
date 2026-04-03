@@ -68,12 +68,9 @@ L'exécutable sera généré dans `dist/` et le `.dmg` à la racine du projet.
 
 ## 📄 Documentation détaillée
 
-Pour une compréhension totale de l'architecture logicielle, de nos choix d'infrastructures et des résolutions de bugs liés à Apple Silicon et macOS, notre Manuel Technique (100+ pages) généré par l'agent @docs-architect est disponible.
+Pour une compréhension totale de l'architecture logicielle, de nos choix d'infrastructures et des résolutions de bugs liés à Apple Silicon et macOS, notre Documentation Technique complète est disponible.
 
 Consultez ces documents dans le sous-dossier `Documentation/` (ouverts dans n'importe quel éditeur, schémas Mermaid inclus) :
 
-- [Manuel_Technique.md](Documentation/Manuel_Technique.md) : L'encyclopédie du projet.
+- [Documentation Technique.md](Documentation/Documentation%20Technique.md) : L'encyclopédie du projet (architecture, pipelines de données, pyinstaller).
 - [CODE_REVIEW.md](Documentation/CODE_REVIEW.md) : Audit complet de la base de code Python.
-
-La définition officielle des besoins (PRD) reste disponible à l'adresse :
-- `PRD reunion.md`
